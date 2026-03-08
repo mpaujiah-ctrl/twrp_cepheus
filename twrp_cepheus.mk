@@ -26,15 +26,14 @@ $(call inherit-product, vendor/twrp/config/common.mk)
 # Inherit device configuration
 $(call inherit-product, device/xiaomi/cepheus/device.mk)
 
-# Casefolding
-$(call inherit-product, $(SRC_TARGET_DIR)/product/emulated_storage.mk)
+# Inherit any OrangeFox-specific settings
+$(call inherit-product-if-exists, device/xiaomi/cepheus/fox_cepheus.mk)
 
-## Device identifier. This must come after all inclusions
+# Device identifier. This must come after all inclusions
 PRODUCT_DEVICE := cepheus
 PRODUCT_NAME := twrp_cepheus
 PRODUCT_BRAND := Xiaomi
 PRODUCT_MODEL := Mi 9
 PRODUCT_MANUFACTURER := Xiaomi
-
-# Dynamic Partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
+PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
