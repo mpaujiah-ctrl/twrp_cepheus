@@ -9,7 +9,8 @@
 /misc           emmc     /dev/block/bootdevice/by-name/misc                      flags=backup=1;display="misc";flashimg=1
 
 /metadata       ext4     /dev/block/bootdevice/by-name/metadata                  flags=display="Metadata";backup=1
-/cache          ext4     /dev/block/bootdevice/by-name/cache                     flags=display="Cache";backup=1;wipeingui;wipeduringfactoryreset
+/cache          ext4     /dev/block/bootdevice/by-name/cache                     flags=display="Cache";backup=1;wipeduringfactoryreset
+/cache          f2fs     /dev/block/bootdevice/by-name/cache                     flags=display="Cache";backup=1;wipeduringfactoryreset
 /cust           ext4     /dev/block/bootdevice/by-name/cust                      flags=backup=1;display="Cust";flashimg=1
 
 # Storage
