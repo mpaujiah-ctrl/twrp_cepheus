@@ -36,6 +36,9 @@ if [ -z "$1" -a -z "$FOX_BUILD_DEVICE" ]; then
 fi
 
 if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
+	export FOX_VARIANT=A16-retrofit_f2fs
+	export FOX_BUILD_TYPE=Unofficial
+	export FOX_MAINTAINER_PATCH_VERSION=3
 	export FOX_USE_BASH_SHELL=1
 	export FOX_ASH_IS_BASH=1
 	export FOX_USE_LZ4_BINARY=1
@@ -52,6 +55,7 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
 	export FOX_USE_FSCK_EROFS_BINARY=1
 	export FOX_USE_BUSYBOX_BINARY=1
 	export FOX_DELETE_MAGISK_ADDON=1
+	export FOX_ENABLE_KERNELSU_NEXT_SUPPORT=1
 
 	if [ -z "$FOX_BUILD_DEVICE" -a -z "$BASH_SOURCE" ]; then
 		echo "I: This script requires bash. Not processing the $FDEVICE $(basename $0)"
