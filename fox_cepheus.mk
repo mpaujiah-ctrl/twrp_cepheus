@@ -62,7 +62,7 @@ OF_BIND_MOUNT_SDCARD_ON_FORMAT := 1
 
 # whether force EXT4 / F2FS when formatting data (Do not use both!)
 #OF_FORCE_DATA_FORMAT_EXT4 := 1
-#OF_FORCE_DATA_FORMAT_F2FS := 1
+OF_FORCE_DATA_FORMAT_F2FS := 1
 
 # avoid decryption problems on some devices and ROMs
 OF_FIX_DECRYPTION_ON_DATA_MEDIA := 0
