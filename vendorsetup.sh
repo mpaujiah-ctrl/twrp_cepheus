@@ -51,6 +51,7 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
         export FOX_VANILLA_BUILD=1
 	export FOX_USE_FSCK_EROFS_BINARY=1
 	export FOX_USE_BUSYBOX_BINARY=1
+	export FOX_DELETE_MAGISK_ADDON=1
 
 	if [ -z "$FOX_BUILD_DEVICE" -a -z "$BASH_SOURCE" ]; then
 		echo "I: This script requires bash. Not processing the $FDEVICE $(basename $0)"
