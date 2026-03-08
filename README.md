@@ -16,7 +16,7 @@
 **Works**
 
 - Booting.
-- **Decryption** (Android 12)
+- **Decryption** (Android 12+)
 - ADB
 - MTP
 - OTG
@@ -24,34 +24,38 @@
 
 ### Compile
 
-First checkout minimal twrp tree:
+You can find a full compile guide for OrangeFox [Here](https://wiki.orangefox.tech/en/dev/building)
 
+_Lunch_ command :
 ```
-repo init -u git://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-12.1
-repo sync
-```
-
-Then add these projects to .repo/manifest.xml:
-
-```xml
-<project path="device/xiaomi/cepheus" name="JoK3rLeE/twrp_device_xiaomi_cepheus" remote="github" revision="android-12" />
+lunch twrp_cepheus-eng && mka adbd bootimage
 ```
 
-Finally execute these:
+## Credits
+- Thanks to @mauronofrio for initial [cepheus twrp tree](https://github.com/mauronofrio/android_device_xiaomi_cepheus)
+- Thanks to @Pranav-Talmale for android 12.1 dynamimc-retrofit [raphael trees](https://github.com/Pranav-Talmale/android_device_xiaomi_raphael-twrp)
+- Thanks to @chematelegram for the commits for [twrp_cepheus](https://github.com/chematelegram/twrp_cepheus)
+- Thanks to @tribual for the commits for [twrp_cepheus](https://github.com/tribual/twrp_cepheus)
+- Thanks to @raystef66 for the android 16 [cepheus device tree](https://github.com/crdroidandroid/android_device_xiaomi_cepheus)
+- Thanks to @raystef66 for the [InfiniR kernel for cepheus](https://github.com/raystef66/kernel_xiaomi_cepheus)
 
-```
-. build/envsetup.sh
-lunch twrp_cepheus-eng && mka recoveryimage
-```
-
-To test it:
-
-```
-fastboot boot out/target/product/cepheus/recovery.img
-```
-
-## Thanks
-
-- Thanks to @PeterCxy for the commits and the base: https://github.com/PeterCxy/android_device_xiaomi_violet-twrp
-- Thanks to @mauronofrio for initial cepheus twrp tree: https://github.com/mauronofrio/android_device_xiaomi_cepheus
-- Thanks to @Pranav-Talmale for android 12.1 raphael trees base: https://github.com/Pranav-Talmale/android_device_xiaomi_raphael-twrp
+### Copyright
+ ```
+  /*
+  *  Copyright (C) 2022-2026 The OrangeFox Recovery Project
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  *
+  */
+  ```
