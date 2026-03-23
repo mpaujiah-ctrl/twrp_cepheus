@@ -36,9 +36,9 @@ if [ -z "$1" -a -z "$FOX_BUILD_DEVICE" ]; then
 fi
 
 if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
-	export FOX_VARIANT=A16-retrofit_f2fs
+	export FOX_VARIANT=Legacy
 	export FOX_BUILD_TYPE=Unofficial
-	export FOX_MAINTAINER_PATCH_VERSION=3
+	export FOX_MAINTAINER_PATCH_VERSION=2
 	export FOX_USE_BASH_SHELL=1
 	export FOX_ASH_IS_BASH=1
 	export FOX_USE_LZ4_BINARY=1

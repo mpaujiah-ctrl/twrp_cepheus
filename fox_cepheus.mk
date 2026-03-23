@@ -33,7 +33,6 @@ OF_CLOCK_POS := 1
 OF_QUICK_BACKUP_LIST := /boot;/data;
 OF_ENABLE_LPTOOLS := 1
 OF_NO_SPLASH_CHANGE := 1
-OF_FBE_METADATA_MOUNT_IGNORE := 1
 OF_NO_TREBLE_COMPATIBILITY_CHECK := 1
 OF_NO_ADDITIONAL_MIUI_PROPS_CHECK := 1
 OF_FIX_OTA_UPDATE_MANUAL_FLASH_ERROR := 1
@@ -43,14 +42,8 @@ OF_FLASHLIGHT_ENABLE :=1
 OF_FL_PATH1 := /sys/class/leds/led:torch_0
 OF_FL_PATH2 :=/sys/class/leds/led:switch_0
 
-# full size
-OF_DYNAMIC_FULL_SIZE := 5368709120
-
 # all partition tools 
 OF_ENABLE_ALL_PARTITION_TOOLS := 1
-
-# formatting /data with the required arguments for dynamic partitions
-OF_FORCE_CASEFOLDING := 1
 
 # ----- data format stuff -----
 # ensure that /sdcard is bind-unmounted before f2fs data repair or format
@@ -61,15 +54,6 @@ OF_WIPE_METADATA_AFTER_DATAFORMAT := 1
 
 # avoid MTP issues after data format (Experimental)
 OF_BIND_MOUNT_SDCARD_ON_FORMAT := 1
-
-# force F2FS when formatting data (Do not use both!)
-OF_FORCE_DATA_FORMAT_F2FS := 1
-
-# avoid decryption problems on some devices and ROMs
-OF_FIX_DECRYPTION_ON_DATA_MEDIA := 1
-
-# Display debug information about the target partition when formatting data 
-OF_DISPLAY_FORMAT_FILESYSTEMS_DEBUG_INFO := 1
 
 # add dmctl
 OF_USE_DMCTL := 1
