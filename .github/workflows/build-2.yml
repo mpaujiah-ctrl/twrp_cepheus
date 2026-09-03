@@ -1,0 +1,289 @@
+name: OrangeFox Baseline V3
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            git curl wget python3 python-is-python3 \
+            bc bison build-essential \
+            zip unzip flex g++-multilib gcc-multilib \
+            libc6-dev-i386 lib32ncurses5-dev lib32z1-dev \
+            libssl-dev libxml2-utils xsltproc \
+            openjdk-11-jdk
+
+          mkdir -p ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod +x ~/bin/repo
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Clone OrangeFox source
+        run: |
+          mkdir -p ~/OrangeFox_sync
+          cd ~/OrangeFox_sync
+
+          git clone https://gitlab.com/OrangeFox/sync.git
+
+          cd sync
+          chmod +x orangefox_sync.sh
+
+          ./orangefox_sync.sh \
+            --branch 12.1 \
+            --path ~/fox_12.1
+
+      - name: Inject local manifest
+        run: |
+          cd ~/fox_12.1
+
+          mkdir -p .repo/local_manifests
+
+          cat > .repo/local_manifests/cepheus.xml <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <manifest>
+              <project
+                  path="device/xiaomi/cepheus"
+                  name="mpaujiah-ctrl/twrp_cepheus"
+                  remote="github"
+                  revision="ofox_12.1-legacy" />
+          </manifest>
+          EOF
+
+          echo "===== Local Manifest ====="
+          cat .repo/local_manifests/cepheus.xml
+
+      - name: Repo sync device tree
+        run: |
+          cd ~/fox_12.1
+
+          repo sync -j4 device/xiaomi/cepheus
+
+      - name: V3 - Disable full metadata wipe
+        run: |
+          cd ~/fox_12.1
+
+          echo "======================================"
+          echo "V3 METADATA PRESERVATION EXPERIMENT"
+          echo "======================================"
+
+          FILE="device/xiaomi/cepheus/fox_cepheus.mk"
+
+          echo
+          echo "=== BEFORE ==="
+          grep -n "OF_WIPE_METADATA_AFTER_DATAFORMAT" "$FILE" || \
+            echo "Flag not defined"
+
+          # Disable full /metadata wipe after Format Data.
+          # Keep every other V2 configuration unchanged.
+          sed -i \
+            '/^[[:space:]]*OF_WIPE_METADATA_AFTER_DATAFORMAT[[:space:]]*:=/s/^/# V3 disabled: /' \
+            "$FILE"
+
+          echo
+          echo "=== AFTER ==="
+          grep -n "OF_WIPE_METADATA_AFTER_DATAFORMAT" "$FILE" || \
+            echo "Flag not defined"
+
+          echo
+          echo "=== HARD VALIDATION ==="
+
+          # Look ONLY for an active Make assignment.
+          # Commented lines are intentionally ignored.
+          if grep -Eq \
+            '^[[:space:]]*OF_WIPE_METADATA_AFTER_DATAFORMAT[[:space:]]*:=' \
+            "$FILE"; then
+
+              echo
+              echo "❌ V3 VALIDATION FAILED"
+              echo "OF_WIPE_METADATA_AFTER_DATAFORMAT is still ACTIVE!"
+              echo
+              grep -n \
+                '^[[:space:]]*OF_WIPE_METADATA_AFTER_DATAFORMAT[[:space:]]*:=' \
+                "$FILE"
+              exit 1
+
+          else
+              echo
+              echo "✅ V3 VALIDATION PASSED"
+              echo "OF_WIPE_METADATA_AFTER_DATAFORMAT is NOT ACTIVE."
+          fi
+
+          echo
+          echo "=== RELATED CONFIGURATION ==="
+
+          grep -nE \
+            "OF_WIPE_METADATA_AFTER_DATAFORMAT|OF_FORCE_DATA_FORMAT_EXT4|TW_INCLUDE_FBE_METADATA_DECRYPT|BOARD_USES_METADATA_PARTITION" \
+            "$FILE" || true
+
+          echo
+          echo "======================================"
+          echo "V3 CONFIGURATION ACCEPTED"
+          echo "======================================"
+      
+      - name: Verify device tree
+        run: |
+          cd ~/fox_12.1
+
+          echo "======================================"
+          echo "Repo project:"
+          repo list | grep cepheus || true
+
+          echo
+          echo "======================================"
+          echo "Device tree:"
+          ls -la device/xiaomi/cepheus
+
+          echo
+          echo "======================================"
+          echo "AndroidProducts.mk"
+          cat device/xiaomi/cepheus/AndroidProducts.mk
+
+          echo
+          echo "======================================"
+          echo "vendorsetup.sh"
+          head -40 device/xiaomi/cepheus/vendorsetup.sh
+
+          echo
+          echo "======================================"
+          echo "fox_cepheus.mk"
+          head -40 device/xiaomi/cepheus/fox_cepheus.mk
+
+      - name: Debug vendorsetup.sh
+        run: |
+          cd ~/fox_12.1
+
+          echo "======================================"
+          echo "DEBUG ENVSETUP"
+          echo "======================================"
+
+          echo
+          echo "=== VENDORSETUP REFERENCES ==="
+          grep -n -B 15 -A 25 "vendorsetup.sh" build/envsetup.sh || true
+
+          echo
+          echo "=== PRODUCT/LUNCH DEFINITIONS ==="
+          grep -Rns \
+            "omni_cepheus\|cepheus-eng\|add_lunch_combo" \
+            device/xiaomi/cepheus \
+            vendor/orangefox \
+            device 2>/dev/null | head -100 || true
+
+          echo
+          echo "=== ENVSETUP SYNTAX ==="
+          bash -n build/envsetup.sh
+
+          echo
+          echo "=== SOURCE ENVSETUP ==="
+
+          set +e
+          set -x
+          source build/envsetup.sh
+          RC=$?
+
+          echo
+          echo "======================================"
+          echo "ENVSETUP RESULT"
+          echo "======================================"
+          echo "RC=$RC"
+
+          echo
+          echo "=== VTS ANDROID.MK ==="
+          if [ -s frameworks/base/services/core/xsd/vts/Android.mk ]; then
+              echo "EXISTS AND NON-EMPTY"
+              ls -lh frameworks/base/services/core/xsd/vts/Android.mk
+          else
+              echo "MISSING OR EMPTY"
+          fi
+
+          echo
+          echo "=== ORANGEFOX MK ==="
+          ls -lh bootable/recovery/orangefox.mk 2>/dev/null || true
+
+          echo
+          echo "=== ORANGEFOX DEFAULTS ==="
+          ls -lh bootable/recovery/orangefox_defaults.go 2>/dev/null || true
+
+          echo
+          echo "=== CONTINUE TEST ==="
+          lunch omni_cepheus-eng
+          LUNCH_RC=$?
+
+          echo "lunch RC=$LUNCH_RC"
+
+          exit 0
+
+      - name: Build OrangeFox V3A
+        run: |
+          cd ~/fox_12.1
+
+          echo "======================================"
+          echo "BUILD ORANGEFOX V3A"
+          echo "======================================"
+
+          export ALLOW_MISSING_DEPENDENCIES=true
+
+          source build/envsetup.sh || true
+
+          echo
+          echo "======================================"
+          echo "LUNCH twrp_cepheus-eng"
+          echo "======================================"
+
+          lunch twrp_cepheus-eng
+
+          echo
+          echo "======================================"
+          echo "STARTING RECOVERY BUILD"
+          echo "======================================"
+
+          mka recoveryimage
+
+      - name: Package OrangeFox V3A Artifact
+        if: success()
+        run: |
+          cd ~/fox_12.1
+
+          echo "======================================"
+          echo "ORANGEFOX V3A ARTIFACT"
+          echo "======================================"
+
+          mkdir -p ~/artifact
+
+          echo "=== SEARCH RECOVERY IMAGE ==="
+          find out -type f \
+            \( -name "recovery.img" -o -name "recoveryimage" \) \
+            -print
+
+          RECOVERY=$(find out -type f -name "recovery.img" | head -n 1)
+
+          if [ -z "$RECOVERY" ]; then
+            echo "ERROR: recovery.img not found"
+            exit 1
+          fi
+
+          echo "Found: $RECOVERY"
+
+          cp "$RECOVERY" ~/artifact/OrangeFox-V3A-cepheus.img
+
+          echo
+          echo "=== ARTIFACT INFO ==="
+          ls -lh ~/artifact/OrangeFox-V3A-cepheus.img
+          sha256sum ~/artifact/OrangeFox-V3A-cepheus.img
+
+      - name: Upload OrangeFox V3A
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-V3A-cepheus
+          path: ~/artifact/OrangeFox-V3A-cepheus.img
+          if-no-files-found: error
