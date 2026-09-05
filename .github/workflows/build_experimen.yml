@@ -130,6 +130,40 @@ jobs:
           echo "EXP1 CONFIGURATION ACCEPTED"
           echo "======================================"
       
+      - name: EXP2 - Strip deprecated gsi_keys.mk inherits
+        run: |
+          cd ~/fox_14.1
+
+          echo "======================================"
+          echo "EXP2 GSI_KEYS COMPATIBILITY PATCH"
+          echo "======================================"
+
+          FILE="device/xiaomi/cepheus/device.mk"
+
+          echo
+          echo "=== BEFORE ==="
+          grep -n "gsi_keys.mk" "$FILE" || echo "Not found"
+
+          # gsi_keys.mk was removed from upstream AOSP build/make
+          # (AOSP bug 176869478) - not needed for recovery-only builds.
+          sed -i \
+            -e '/^\$(call inherit-product, \$(SRC_TARGET_DIR)\/product\/gsi_keys.mk)/s/^/# EXP2 removed: /' \
+            -e '/^\$(call inherit-product, \$(SRC_TARGET_DIR)\/product\/developer_gsi_keys.mk)/s/^/# EXP2 removed: /' \
+            "$FILE"
+
+          echo
+          echo "=== AFTER ==="
+          grep -n "gsi_keys.mk" "$FILE" || echo "Not found"
+
+          echo
+          echo "=== VALIDATION ==="
+          if grep -Eq '^\$\(call inherit-product, \$\(SRC_TARGET_DIR\)/product/(developer_)?gsi_keys\.mk\)' "$FILE"; then
+            echo "❌ EXP2 VALIDATION FAILED - inherit still active"
+            exit 1
+          else
+            echo "✅ EXP2 VALIDATION PASSED - gsi_keys inherits neutralized"
+          fi
+      
       - name: Verify device tree
         run: |
           cd ~/fox_14.1
