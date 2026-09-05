@@ -44,6 +44,14 @@ jobs:
           chmod +x ~/bin/repo
           echo "$HOME/bin" >> $GITHUB_PATH
 
+      - name: Add swap space
+        run: |
+          sudo fallocate -l 8G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+      
       - name: Clone OrangeFox source
         run: |
           mkdir -p ~/OrangeFox_sync
@@ -296,7 +304,7 @@ jobs:
           echo "STARTING RECOVERY BUILD"
           echo "======================================"
 
-          mka recoveryimage
+          mka recoveryimage -j2
 
       - name: Package OrangeFox EXP1 Artifact
         if: success()
